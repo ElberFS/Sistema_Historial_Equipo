@@ -23,7 +23,7 @@ return new class extends Migration
             //definicion de claves foraneas 
 
             $table->foreign('areas_id')->references('id')->on('areas');
-            $table->foreign('devices_types_id')->references('id')->on('device_types');
+            $table->foreign('device_types_id')->references('id')->on('device_types');
         });
     }
 
