@@ -17,10 +17,13 @@ return new class extends Migration
             $table->string('description');
             $table->unsignedBigInteger('documents_id')->nullable();
             $table->unsignedBigInteger('device_tickets_id')->nullable();
+            $table->unsignedBigInteger('users_id');
+            $table->char('status');
             $table->boolean('current')->default(true);
             $table->timestamps();
 
             //Definicion de claves foraneas 
+            $table->foreign('users_id')->references('id')->on('users');
             $table->foreign('device_tickets_id')->references('id')->on('device_tickets');
             $table->foreign('documents_id')->references('id')->on('documents');
         });
