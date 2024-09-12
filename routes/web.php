@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\DeviceTypeController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,4 +18,5 @@ Route::middleware([
     })->name('dashboard');
 
     Route::resource('device_types', DeviceTypeController::class);
+    Route::resource('areas', AreaController::class);
 });

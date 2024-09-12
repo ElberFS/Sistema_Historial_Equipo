@@ -19,7 +19,12 @@
                 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link href="{{ route('device_types.index') }}" :active="request()->routeIs('device_types.index')">
-                        {{ __('Device Types') }}
+                        {{ __('Tipos Equipos') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('areas.index') }}" :active="request()->routeIs('areas.index')">
+                        {{ __('Areas') }}
                     </x-nav-link>
                 </div>
 
