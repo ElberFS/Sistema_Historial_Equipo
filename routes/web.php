@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DeviceTypeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,4 +15,6 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::resource('device_types', DeviceTypeController::class);
 });
