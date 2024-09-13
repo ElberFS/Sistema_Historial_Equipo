@@ -13,13 +13,16 @@ class Area extends Model
 
     protected $fillable = [
         'name',
+        'managers_id',
+        'current'
     ];
 
     // Relación con el modelo Manager
     public function manager()
     {
-        return $this->belongsTo(Manager::class);
+        return $this->belongsTo(Manager::class, 'managers_id');
     }
+    
 
     // Relación con el modelo Device (un área puede tener muchos dispositivos)
     public function devices()

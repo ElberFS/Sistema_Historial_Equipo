@@ -27,6 +27,16 @@
                         {{ __('Areas') }}
                     </x-nav-link>
                 </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('managers.index') }}" :active="request()->routeIs('managers.index')">
+                        {{ __('Jefe Area') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('devices.index') }}" :active="request()->routeIs('devices.index')">
+                        {{ __('Equipos') }}
+                    </x-nav-link>
+                </div>
 
             </div>
 

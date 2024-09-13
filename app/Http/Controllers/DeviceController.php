@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Area;
 use App\Models\Device;
+use App\Models\DeviceType;
 use Illuminate\Http\Request;
 
 class DeviceController extends Controller
@@ -24,9 +26,15 @@ class DeviceController extends Controller
      */
     public function create()
     {
-        // Retornar la vista para crear un nuevo dispositivo
-        return view('devices.create');
+        // Retrieve all areas and device types
+        $areas = Area::all();
+        $deviceTypes = DeviceType::all();
+
+        // Pass them to the view
+        return view('devices.create', compact('areas', 'deviceTypes'));
     }
+
+
 
     /**
      * Almacena un nuevo dispositivo en la base de datos.
@@ -54,12 +62,17 @@ class DeviceController extends Controller
      */
     public function edit($id)
     {
-        // Buscar el dispositivo por su ID o lanzar una excepción si no se encuentra
+        // Retrieve the device to edit
         $device = Device::findOrFail($id);
 
-        // Retornar la vista de edición con los datos del dispositivo
-        return view('devices.update', compact('device'));
+        // Retrieve all areas and device types
+        $areas = Area::all();
+        $deviceTypes = DeviceType::all();
+
+        // Pass them to the view
+        return view('devices.update', compact('device', 'areas', 'deviceTypes'));
     }
+
 
     /**
      * Actualiza un dispositivo existente en la base de datos.

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Manager;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ManagerController extends Controller
@@ -24,8 +25,11 @@ class ManagerController extends Controller
      */
     public function create()
     {
-        // Retornar la vista para crear un nuevo Manager
-        return view('managers.create');
+        // Obtener todos los usuarios para el campo select
+        $users = User::all(); // O User::pluck('name', 'id') si solo necesitas el nombre e id
+
+        // Retornar la vista y pasar la variable $users
+        return view('managers.create', compact('users'));
     }
 
     /**
@@ -57,9 +61,9 @@ class ManagerController extends Controller
     {
         // Buscar el Manager por su ID o lanzar una excepción si no se encuentra
         $manager = Manager::findOrFail($id);
-
+        $users = User::all(); // O User::pluck('name', 'id') si solo necesitas los nombres
         // Retornar la vista de edición con los datos del Manager
-        return view('managers.update', compact('manager'));
+        return view('managers.update', compact('manager', 'users'));
     }
 
     /**

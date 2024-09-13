@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\Manager;
 use Illuminate\Http\Request;
 
 class AreaController extends Controller
@@ -24,9 +25,10 @@ class AreaController extends Controller
      */
     public function create()
     {
-        // Retornar la vista para crear una nueva área
-        return view('areas.create');
+        $managers = Manager::all(); // Asegúrate de importar el modelo Manager
+        return view('areas.create', compact('managers'));
     }
+    
 
     /**
      * Almacena una nueva área en la base de datos.
@@ -51,13 +53,17 @@ class AreaController extends Controller
      * Muestra el formulario para editar una área existente.
      */
     public function edit($id)
-    {
-        // Buscar el área por su ID o lanzar una excepción si no se encuentra
-        $area = Area::findOrFail($id);
+{
+    // Buscar el área por su ID
+    $area = Area::findOrFail($id);
 
-        // Retornar la vista de edición con los datos del área
-        return view('areas.update', compact('area'));
-    }
+    // Obtener todos los managers para el formulario
+    $managers = Manager::all();
+
+    // Retornar la vista de edición con los datos del área y la lista de managers
+    return view('areas.update', compact('area', 'managers'));
+}
+
 
     /**
      * Actualiza una área existente en la base de datos.
@@ -69,8 +75,8 @@ class AreaController extends Controller
 
         // Validar los datos del formulario
         $validatedData = $request->validate([
-            'name' => 'nullable|string|max:100', // Permitir que el campo no sea obligatorio
-            'managers_id' => 'nullable|exists:managers,id',
+            'name' => 'required|string|max:100', // Permitir que el campo no sea obligatorio
+            'managers_id' => 'required|exists:managers,id',
             'current' => 'boolean' // Si no está presente, no cambiará el valor
         ]);
 
