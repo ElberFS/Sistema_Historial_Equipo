@@ -23,7 +23,7 @@ class Document extends Model
 
     public function deviceTicket()
     {
-        return $this->belongsTo(DeviceTicket::class);
+        return $this->hasMany(DeviceTicket::class);
     }
 
     public function manager()

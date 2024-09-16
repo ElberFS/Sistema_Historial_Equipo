@@ -17,12 +17,10 @@ return new class extends Migration
             $table->String('title');
             $table->string('description');
             $table->unsignedBigInteger('managers_id');
-            $table->unsignedBigInteger('device_tickets_id');
             $table->boolean('current')->default(true);
             $table->timestamps();
 
             //definicion de claves foraneas 
-            $table->foreign('device_tickets_id')->references('id')->on('device_tickets');        
             $table->foreign('managers_id')->references('id')->on('managers');
 
         });
