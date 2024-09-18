@@ -12,8 +12,8 @@ class DocumentController extends Controller
      */
     public function index()
     {
-        // Obtener todos los registros de Document
-        $documents = Document::all();
+        // Obtener todos los registros de Document con paginación
+        $documents = Document::paginate(10); // Cambiado a paginación para mejor rendimiento
 
         // Retornar la vista 'index' con la lista de documentos
         return view('documents.index', compact('documents'));
@@ -39,8 +39,7 @@ class DocumentController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:500',
             'managers_id' => 'required|exists:managers,id',
-            'device_tickets_id' => 'required|exists:device_tickets,id',
-            'current' => 'required|boolean'
+            'current' => 'required|boolean',
         ]);
 
         // Crear un nuevo Document con los datos validados
@@ -72,12 +71,11 @@ class DocumentController extends Controller
 
         // Validar los datos del formulario
         $validatedData = $request->validate([
-            'code' => 'nullable|string|max:50',
+            'code' => 'nullable|string|max:50|unique:documents,code,' . $document->id, // Verificar que el código sea único, excepto para el registro actual
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
-            'managers_id' => 'exists:managers,id',
-            'device_tickets_id' => 'exists:device_tickets,id',
-            'current' => 'boolean'
+            'managers_id' => 'nullable|exists:managers,id',
+            'current' => 'nullable|boolean',
         ]);
 
         // Actualizar el Document con los datos validados
