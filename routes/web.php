@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\DeviceTicketController;
 use App\Http\Controllers\DeviceTypeController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ManagerController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,4 +25,6 @@ Route::middleware([
     Route::resource('areas', AreaController::class);
     Route::resource('managers',ManagerController::class);
     Route::resource('devices',DeviceController::class);
+    Route::resource('documents' , DocumentController::class);
+    Route::resource('device_tickets',DeviceTicketController::class);
 });

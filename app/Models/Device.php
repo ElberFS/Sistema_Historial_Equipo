@@ -22,7 +22,7 @@ class Device extends Model
 
     public function deviceType()
     {
-        return $this->belongsTo(DeviceType::class);
+        return $this->belongsTo(DeviceType::class, 'device_types_id');
     }
 
     public function area()

@@ -20,7 +20,9 @@ class DeviceType extends Model
 
     //Definicion de relacion de migraciones 
 
-    public function devices(){
-        return $this->hasMany(Device::class);
+    public function deviceType()
+    {
+        return $this->belongsTo(DeviceType::class, 'device_types_id');
     }
+    
 }

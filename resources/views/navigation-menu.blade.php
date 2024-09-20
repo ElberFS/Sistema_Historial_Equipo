@@ -37,6 +37,16 @@
                         {{ __('Equipos') }}
                     </x-nav-link>
                 </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('documents.index') }}" :active="request()->routeIs('documents.index')">
+                        {{ __('Documentos') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('device_tickets.index') }}" :active="request()->routeIs('device_tickets.index')">
+                        {{ __('Listas Equipos') }}
+                    </x-nav-link>
+                </div>
 
             </div>
 
