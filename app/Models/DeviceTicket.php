@@ -14,9 +14,9 @@ class DeviceTicket extends Model
     protected $fillable = [
         'code',
         'tickets_id',
-        'documents_id',
         'devices_id',
         'current',
+        'documents_id'
     ];
 
     // Definición de relaciones

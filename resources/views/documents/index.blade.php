@@ -25,48 +25,63 @@
                                 <th class="px-4 py-2 text-gray-900 dark:text-white text-center">Description</th>
                                 <th class="px-4 py-2 text-gray-900 dark:text-white text-center">Manager</th>
                                 <th class="px-4 py-2 text-gray-900 dark:text-white text-center">Current</th>
+                                <th class="px-4 py-2 text-gray-900 dark:text-white text-center">Device ID</th>
                                 <th class="px-4 py-2 text-gray-900 dark:text-white text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($documents as $document)
-                                <tr>
-                                    <td class="border px-4 py-2 text-gray-900 dark:text-white text-center">
-                                        {{ $document->code }}
-                                    </td>
-                                    <td class="border px-4 py-2 text-gray-900 dark:text-white text-center">
-                                        {{ $document->title }}
-                                    </td>
-                                    <td class="border px-4 py-2 text-gray-900 dark:text-white text-center">
-                                        {{ $document->description }}
-                                    </td>
-                                    <td class="border px-4 py-2 text-gray-900 dark:text-white text-center">
-                                        {{ $document->managers_id }}
-                                    </td>
-                                    <td class="border px-4 py-2 text-gray-900 dark:text-white text-center">
-                                        @if($document->current)
-                                            <span class="bg-green-200 dark:bg-green-700 text-green-800 dark:text-green-300 py-1 px-3 rounded-full text-xs">Current</span>
-                                        @else
-                                            <span class="bg-red-200 dark:bg-red-700 text-red-800 dark:text-red-300 py-1 px-3 rounded-full text-xs">Not Current</span>
+                            @php
+                                // Agrupar por 'code' directamente en la vista
+                                $groupedDocuments = $documents->groupBy('code');
+                            @endphp
+                            @foreach ($groupedDocuments as $code => $groupedDocs)
+                                @php
+                                    $rowspan = count($groupedDocs);
+                                @endphp
+                                @foreach ($groupedDocs as $index => $document)
+                                    <tr>
+                                        @if ($index === 0)
+                                            <td class="border px-4 py-2 text-gray-900 dark:text-white text-center" rowspan="{{ $rowspan }}">
+                                                {{ $document->code }}
+                                            </td>
+                                            <td class="border px-4 py-2 text-gray-900 dark:text-white text-center" rowspan="{{ $rowspan }}">
+                                                {{ $document->title }}
+                                            </td>
+                                            <td class="border px-4 py-2 text-gray-900 dark:text-white text-center" rowspan="{{ $rowspan }}">
+                                                {{ $document->Description }}
+                                            </td>
+                                            <td class="border px-4 py-2 text-gray-900 dark:text-white text-center" rowspan="{{ $rowspan }}">
+                                                {{ $document->manager }}
+                                            </td>
+                                            <td class="border px-4 py-2 text-gray-900 dark:text-white text-center" rowspan="{{ $rowspan }}">
+                                                @if($document->current)
+                                                    <span class="bg-green-200 dark:bg-green-700 text-green-800 dark:text-green-300 py-1 px-3 rounded-full text-xs">Current</span>
+                                                @else
+                                                    <span class="bg-red-200 dark:bg-red-700 text-red-800 dark:text-red-300 py-1 px-3 rounded-full text-xs">Not Current</span>
+                                                @endif
+                                            </td>
                                         @endif
-                                    </td>
-                                    <td class="border px-4 py-2 text-center">
-                                        <div class="flex justify-center">
-                                            <a href="{{ route('documents.edit', $document->id) }}"
-                                                class="bg-violet-500 dark:bg-violet-700 hover:bg-violet-600 dark:hover:bg-violet-800 text-white font-bold py-2 px-4 rounded mr-2">
-                                                Edit
-                                            </a>
-                                            <form action="{{ route('documents.destroy', $document->id) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="bg-pink-400 dark:bg-pink-600 hover:bg-pink-500 dark:hover:bg-pink-700 text-white font-bold py-2 px-4 rounded">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        <td class="border px-4 py-2 text-gray-900 dark:text-white text-center">
+                                            {{ $document->devices_id }}
+                                        </td>
+                                        <td class="border px-4 py-2 text-center">
+                                            <div class="flex justify-center">
+                                                <a href="{{ route('documents.update', $document->id) }}"
+                                                    class="bg-violet-500 dark:bg-violet-700 hover:bg-violet-600 dark:hover:bg-violet-800 text-white font-bold py-2 px-4 rounded mr-2">
+                                                    Edit
+                                                </a>
+                                                <form action="{{ route('documents.destroy', $document->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="bg-pink-400 dark:bg-pink-600 hover:bg-pink-500 dark:hover:bg-pink-700 text-white font-bold py-2 px-4 rounded">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             @endforeach
                         </tbody>
                     </table>
