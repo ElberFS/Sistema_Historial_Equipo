@@ -1,6 +1,5 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-<p align="center"><a href="https://tailwindcss.com" target="_blank"><img src="https://tailwindcss.com/img/tailwindcss-logo.svg" width="200" alt="Tailwind CSS Logo"></a></p>
-<p align="center"><a href="https://blade.dev" target="_blank"><img src="https://blade.dev/img/logo.svg" width="200" alt="Blade Logo"></a></p>
+<p align="center"><a href="https://tailwindcss.com" target="_blank"><img src="https://tailwindcss.com/_next/static/media/tailwindcss-logo.0b17884b.svg" width="200" alt="Tailwind CSS Logo"></a></p>
 <p align="center"><a href="https://www.mysql.com" target="_blank"><img src="https://www.mysql.com/common/logos/logo-mysql-170x115.png" width="200" alt="MySQL Logo"></a></p>
 
 
