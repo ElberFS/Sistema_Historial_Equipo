@@ -9,96 +9,85 @@ use Illuminate\Http\Request;
 class AreaController extends Controller
 {
     /**
-     * Muestra una lista de todas las áreas.
+     * Muestra una lista de todas las áreas disponibles.
+     * Devuelve una vista con los registros de áreas.
      */
     public function index()
     {
-        // Obtener todas las áreas
-        $areas = Area::all();
-
-        // Retornar la vista 'index' con la lista de áreas
-        return view('areas.index', compact('areas'));
+        $areas = Area::all(); // Obtiene todas las áreas
+        return view('areas.index', compact('areas')); // Retorna la vista con las áreas
     }
 
     /**
      * Muestra el formulario para crear una nueva área.
+     * Incluye una lista de todos los managers.
      */
     public function create()
     {
-        $managers = Manager::all(); // Asegúrate de importar el modelo Manager
-        return view('areas.create', compact('managers'));
+        $managers = Manager::all(); // Obtiene todos los managers
+        return view('areas.create', compact('managers')); // Retorna la vista de creación
     }
-    
 
     /**
      * Almacena una nueva área en la base de datos.
+     * Valida los datos enviados desde el formulario.
+     * Redirige a la lista de áreas con un mensaje de éxito.
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario
         $validatedData = $request->validate([
             'name' => 'required|string|max:100',
             'managers_id' => 'required|exists:managers,id',
-            'current' => 'required|boolean' // Asegura que sea enviado en el formulario
+            'current' => 'required|boolean'
         ]);
 
-        // Crear una nueva área con los datos validados
-        Area::create($validatedData);
+        Area::create($validatedData); // Crea el nuevo registro de área
 
-        // Redirigir a la lista de áreas con un mensaje de éxito
         return redirect()->route('areas.index')->with('success', 'Área creada correctamente.');
     }
 
     /**
-     * Muestra el formulario para editar una área existente.
+     * Muestra el formulario para editar un área existente.
+     * Incluye la información del área y la lista de managers.
      */
     public function edit($id)
-{
-    // Buscar el área por su ID
-    $area = Area::findOrFail($id);
+    {
+        $area = Area::findOrFail($id); // Busca el área por su ID
+        $managers = Manager::all(); // Obtiene todos los managers
 
-    // Obtener todos los managers para el formulario
-    $managers = Manager::all();
-
-    // Retornar la vista de edición con los datos del área y la lista de managers
-    return view('areas.update', compact('area', 'managers'));
-}
-
+        return view('areas.update', compact('area', 'managers')); // Retorna la vista de edición
+    }
 
     /**
-     * Actualiza una área existente en la base de datos.
+     * Actualiza un área existente en la base de datos.
+     * Valida los datos del formulario y actualiza el área seleccionada.
+     * Redirige a la lista de áreas con un mensaje de éxito.
      */
     public function update(Request $request, $id)
     {
-        // Buscar el área por su ID
-        $area = Area::findOrFail($id);
+        $area = Area::findOrFail($id); // Busca el área por su ID
 
-        // Validar los datos del formulario
         $validatedData = $request->validate([
-            'name' => 'required|string|max:100', // Permitir que el campo no sea obligatorio
+            'name' => 'required|string|max:100',
             'managers_id' => 'required|exists:managers,id',
-            'current' => 'boolean' // Si no está presente, no cambiará el valor
+            'current' => 'boolean' // Si no está presente, no cambia el valor
         ]);
 
-        // Actualizar el área con los datos validados
-        $area->update($validatedData);
+        $area->update($validatedData); // Actualiza el área
 
-        // Redirigir a la lista de áreas con un mensaje de éxito
         return redirect()->route('areas.index')->with('success', 'Área actualizada correctamente.');
     }
 
     /**
-     * Elimina una área de la base de datos.
+     * Elimina un área de la base de datos.
+     * Busca el área por su ID y la elimina.
+     * Redirige a la lista de áreas con un mensaje de éxito.
      */
     public function destroy($id)
     {
-        // Buscar el área por su ID
-        $area = Area::findOrFail($id);
+        $area = Area::findOrFail($id); // Busca el área por su ID
+        $area->delete(); // Elimina el área
 
-        // Eliminar el área
-        $area->delete();
-
-        // Redirigir a la lista de áreas con un mensaje de éxito
         return redirect()->route('areas.index')->with('success', 'Área eliminada correctamente.');
     }
 }

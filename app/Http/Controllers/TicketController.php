@@ -3,19 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\Document;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TicketController extends Controller
 {
     /**
-     * Muestra todos los tickets.
+     * Muestra todos los tickets paginados.
      */
     public function index()
     {
-        // Obtener todos los tickets
-        $tickets = Ticket::all();
+        // Obtener todos los tickets con las relaciones de usuario y documento
+        $tickets = Ticket::with(['user', 'document'])
+            ->select('id', 'code', 'description', 'status', 'current', 'users_id', 'documents_id')
+            ->paginate(10); // Paginación para mejorar el rendimiento
 
-        // Retornar la vista 'index' con la lista de tickets
         return view('tickets.index', compact('tickets'));
     }
 
@@ -24,8 +28,11 @@ class TicketController extends Controller
      */
     public function create()
     {
-        // Retornar la vista para crear un nuevo Ticket
-        return view('tickets.create');
+        // Obtener todos los usuarios y documentos para los campos select
+        $users = User::all();
+        $documents = Document::all();
+
+        return view('tickets.create', compact('users', 'documents'));
     }
 
     /**
@@ -36,31 +43,57 @@ class TicketController extends Controller
         // Validar los datos del formulario
         $validatedData = $request->validate([
             'code' => 'required|string|max:50',
-            'description' => 'required|string|max:500',
-            'documents_id' => 'nullable|exists:documents,id',
-            'device_tickets_id' => 'nullable|exists:device_tickets,id',
-            'users_id' => 'required|exists:users,id',
-            'status' => 'required|in:A,P,C', // A: Abierto, P: Proceso, C: Cerrado
-            'current' => 'required|boolean'
+            'description' => 'required|string|max:255',
+            'documents_id' => 'nullable|exists:documents,id', // Documento opcional
+            'users_id' => 'required|exists:users,id', // El usuario es obligatorio
+            'status' => 'required|string|max:1', // Estado del ticket (carácter único)
+            'current' => 'required|boolean', // Booleano que indica si el ticket está activo
         ]);
 
-        // Crear un nuevo Ticket con los datos validados
-        Ticket::create($validatedData);
+        // Si no se seleccionó un documento, guardar temporalmente en la sesión
+        if (is_null($validatedData['documents_id'])) {
+            session(['ticket_data' => $validatedData]); // Guardar los datos del ticket en la sesión
 
-        // Redirigir a la lista de tickets con un mensaje de éxito
-        return redirect()->route('tickets.index')->with('success', 'Ticket creado correctamente.');
+            // Redirigir a la creación de device tickets con un mensaje
+            return redirect()->route('device_tickets.create', ['code' => $validatedData['code']])
+                ->with('message', 'Por favor, complete el ticket de dispositivo.');
+        }
+
+        // Iniciar la transacción de la base de datos
+        DB::beginTransaction();
+
+        try {
+            // Crear el ticket con el documento seleccionado
+            Ticket::create($validatedData);
+
+            // Confirmar la transacción
+            DB::commit();
+
+            // Redirigir a la lista de tickets con un mensaje de éxito
+            return redirect()->route('tickets.index')
+                ->with('success', 'Ticket creado correctamente.');
+        } catch (\Exception $e) {
+            // Si ocurre un error, revertir la transacción
+            DB::rollBack();
+
+            // Redirigir de nuevo con un mensaje de error
+            return redirect()->back()->withErrors(['error' => 'Error al crear el ticket. Inténtalo de nuevo.']);
+        }
     }
 
     /**
      * Muestra el formulario para editar un ticket existente.
      */
-    public function edit($id)
+    public function show($id)
     {
-        // Buscar el Ticket por su ID o lanzar una excepción si no se encuentra
+        // Buscar el ticket por su ID o fallar si no existe
         $ticket = Ticket::findOrFail($id);
 
-        // Retornar la vista de edición con los datos del Ticket
-        return view('tickets.edit', compact('ticket'));
+        // Obtener todos los usuarios y documentos para los campos select
+        $users = User::all();
+        $documents = Document::all();
+
+        return view('tickets.update', compact('ticket', 'users', 'documents'));
     }
 
     /**
@@ -68,25 +101,25 @@ class TicketController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Buscar el Ticket por su ID
+        // Buscar el ticket por su ID
         $ticket = Ticket::findOrFail($id);
 
-        // Validar los datos del formulario
+        // Validar los datos actualizados
         $validatedData = $request->validate([
-            'code' => 'string|max:50',
-            'description' => 'string|max:500',
+            'code' => 'nullable|string|max:50|unique:tickets,code,' . $ticket->id, // El código debe ser único
+            'description' => 'nullable|string|max:255',
+            'users_id' => 'nullable|exists:users,id',
             'documents_id' => 'nullable|exists:documents,id',
-            'device_tickets_id' => 'nullable|exists:device_tickets,id',
-            'users_id' => 'exists:users,id',
-            'status' => 'in:A,P,C', // A: Abierto, P: Proceso, C: Cerrado
-            'current' => 'boolean'
+            'status' => 'required|string|max:1', // Estado requerido
+            'current' => 'required|boolean', // Estado actual booleano
         ]);
 
-        // Actualizar el Ticket con los datos validados
+        // Actualizar el ticket con los datos validados
         $ticket->update($validatedData);
 
         // Redirigir a la lista de tickets con un mensaje de éxito
-        return redirect()->route('tickets.index')->with('success', 'Ticket actualizado correctamente.');
+        return redirect()->route('tickets.index')
+            ->with('success', 'Ticket actualizado correctamente.');
     }
 
     /**
@@ -94,10 +127,10 @@ class TicketController extends Controller
      */
     public function destroy($id)
     {
-        // Buscar el Ticket por su ID
+        // Buscar el ticket por su ID
         $ticket = Ticket::findOrFail($id);
 
-        // Eliminar el Ticket
+        // Eliminar el ticket
         $ticket->delete();
 
         // Redirigir a la lista de tickets con un mensaje de éxito

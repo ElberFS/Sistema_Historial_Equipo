@@ -22,21 +22,15 @@ class Ticket extends Model
 
     // Definición de relaciones
 
-    // Relación con Document
-    public function document()
-    {
-        return $this->belongsTo(Document::class, 'documents_id');
-    }
-
-    // Relación con User
+    // Relación con el modelo User
     public function user()
     {
         return $this->belongsTo(User::class, 'users_id');
     }
 
-    // Relación con DeviceTicket
-    public function deviceTickets()
+    // Relación con el modelo Document
+    public function document()
     {
-        return $this->hasMany(DeviceTicket::class, 'tickets_id');
+        return $this->belongsTo(Document::class, 'documents_id');
     }
 }

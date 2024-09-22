@@ -8,42 +8,37 @@ use App\Models\Manager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-
-
 class DocumentController extends Controller
 {
     /**
-     * Muestra todos los documentos.
+     * Muestra una lista de todos los documentos con paginación.
      */
     public function index()
     {
-        // Ejecutar la consulta SQL con el constructor de consultas de Laravel
+        // Obtener todos los documentos con relación a DeviceTicket usando JOIN y paginación
         $documents = DB::table('documents as d')
             ->join('device_tickets as dt', 'd.code', '=', 'dt.code')
             ->select(
                 'd.id',
-                'd.code as code',
-                'd.title as title',
-                'd.description as Description',
+                'd.code',
+                'd.title',
+                'd.description',
                 'd.managers_id as manager',
-                'd.current as current',
+                'd.current',
                 'dt.devices_id'
             )
-            ->paginate(10); // Usar la paginación aquí
+            ->paginate(10); // Paginar los resultados
 
-
-        // Retornar la vista 'index' con la lista de documentos
-        return view('documents.index', compact('documents'));
+        return view('documents.index', compact('documents')); // Retornar la vista con los documentos
     }
+
     /**
      * Muestra el formulario para crear un nuevo documento.
      */
     public function create()
-
     {
-        $managers = Manager::all();
-        // Retornar la vista para crear un nuevo Document
-        return view('documents.create', compact('managers'));
+        $managers = Manager::all(); // Obtener todos los managers
+        return view('documents.create', compact('managers')); // Retornar la vista de creación
     }
 
     /**
@@ -51,7 +46,7 @@ class DocumentController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario del documento
+        // Validar los datos del formulario
         $validatedData = $request->validate([
             'code' => 'required|string|max:50',
             'title' => 'required|string|max:255',
@@ -60,16 +55,14 @@ class DocumentController extends Controller
             'current' => 'required|boolean',
         ]);
 
-        // Verificar si el código ya existe en la base de datos
+        // Verificar si el código ya existe y modificarlo si es necesario
         $originalCode = $validatedData['code'];
         $counter = 1;
-
         while (Document::where('code', $validatedData['code'])->exists()) {
-            $validatedData['code'] = $originalCode . ' - ' . str_pad($counter, 2, '0', STR_PAD_LEFT);
-            $counter++;
+            $validatedData['code'] = $originalCode . ' - ' . str_pad($counter++, 2, '0', STR_PAD_LEFT);
         }
 
-        // Iniciar la transacción
+        // Iniciar transacción para garantizar la consistencia de los datos
         DB::beginTransaction();
 
         try {
@@ -79,40 +72,36 @@ class DocumentController extends Controller
             // Confirmar la transacción
             DB::commit();
 
-            // Obtener el código del documento para el DeviceTicket
-            $code = $document->code;
-
-            // Redirigir al formulario de creación de device ticket con el mismo code
-            return redirect()->route('device_tickets.create', ['code' => $code])
-                ->with('success', 'Document created successfully. Now create a device ticket.');
+            // Redirigir a la creación de DeviceTicket con el mismo código
+            return redirect()->route('device_tickets.create', ['code' => $document->code])
+                ->with('success', 'Documento creado correctamente. Ahora crea un Device Ticket.');
         } catch (\Exception $e) {
-            // Si ocurre un error, hacer rollback
+            // Si hay un error, revertir la transacción
             DB::rollBack();
 
-            return redirect()->back()->withErrors(['error' => 'Error creating the document. Please try again.']);
+            return redirect()->back()->withErrors(['error' => 'Error al crear el documento. Inténtelo de nuevo.']);
         }
     }
-
-
 
     /**
      * Muestra el formulario para editar un documento existente.
      */
+    public function show($id)
+    {
+        $document = Document::findOrFail($id); // Buscar el documento por su ID
+        $managers = Manager::all(); // Obtener todos los managers
 
+        return view('documents.update', compact('document', 'managers')); // Retornar la vista de edición
+    }
 
-
-    /**
-     * Actualiza un documento existente en la base de datos.
-     */
     /**
      * Actualiza un documento existente en la base de datos.
      */
     public function update(Request $request, $id)
     {
-        // Buscar el Document por su ID
-        $document = Document::findOrFail($id);
+        $document = Document::findOrFail($id); // Buscar el documento por su ID
 
-        // Validar y actualizar el documento
+        // Validar los datos del formulario y asegurarse de que el código sea único
         $validatedData = $request->validate([
             'code' => 'nullable|string|max:50|unique:documents,code,' . $document->id,
             'title' => 'nullable|string|max:255',
@@ -121,41 +110,24 @@ class DocumentController extends Controller
             'current' => 'required|boolean',
         ]);
 
+        // Actualizar el documento
         $document->update($validatedData);
 
-        // Buscar el DeviceTicket relacionado con el código del documento
+        // Buscar el DeviceTicket relacionado por el código del documento
         $deviceTicket = DeviceTicket::where('code', $document->code)->firstOrFail();
 
-        // Redirigir al formulario de actualización del DeviceTicket con el ID del DeviceTicket
+        // Redirigir a la edición del DeviceTicket correspondiente
         return redirect()->route('device_tickets.edit', ['device_ticket' => $deviceTicket->id])
             ->with('success', 'Documento actualizado correctamente. Ahora actualiza el Device Ticket.');
     }
-
-
-    public function show($id)
-    {
-        // Buscar el Document por su ID
-        $document = Document::findOrFail($id);
-
-        // Obtener todos los managers para el dropdown
-        $managers = Manager::all();
-
-        // Retornar la vista de edición con el documento y los managers
-        return view('documents.update', compact('document', 'managers'));
-    }
-
-
 
     /**
      * Elimina un documento de la base de datos.
      */
     public function destroy($id)
     {
-        // Buscar el Document por su ID
-        $document = Document::findOrFail($id);
-
-        // Eliminar el Document
-        $document->delete();
+        $document = Document::findOrFail($id); // Buscar el documento por su ID
+        $document->delete(); // Eliminar el documento
 
         // Redirigir a la lista de documentos con un mensaje de éxito
         return redirect()->route('documents.index')->with('success', 'Documento eliminado correctamente.');

@@ -7,7 +7,7 @@ use App\Models\DeviceTicket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Document;
-
+use App\Models\Ticket;
 
 class DeviceTicketController extends Controller
 {
@@ -16,142 +16,128 @@ class DeviceTicketController extends Controller
      */
     public function index()
     {
-        // Obtener todos los device tickets
-        $deviceTickets = DeviceTicket::all();
-
-        // Retornar la vista 'index' con la lista de device tickets
-        return view('device_tickets.index', compact('deviceTickets'));
+        $deviceTickets = DeviceTicket::all(); // Obtener todos los device tickets
+        return view('device_tickets.index', compact('deviceTickets')); // Retornar la vista con los device tickets
     }
 
     /**
      * Muestra el formulario para crear un nuevo device ticket.
+     * Permite seleccionar dispositivos y opcionalmente cargar el código de un documento.
      */
     public function create(Request $request)
     {
-        // Obtener todos los dispositivos disponibles con su relación con DeviceType
-        $devices = Device::with('deviceType')->get();
-
-        // Obtener el código del documento si viene desde la redirección
-        $code = $request->input('code', '');
-
-        // Retornar la vista para crear un nuevo device ticket, pasando el code del documento si existe
-        return view('device_tickets.create', compact('devices', 'code'));
+        $devices = Device::with('deviceType')->get(); // Obtener dispositivos con sus tipos
+        $code = $request->input('code', ''); // Obtener el código si proviene de una redirección
+        
+        return view('device_tickets.create', compact('devices', 'code')); // Retornar la vista de creación
     }
-
-
-
 
     /**
      * Almacena un nuevo device ticket en la base de datos.
+     * Valida y maneja la creación, tanto para tickets desde documentos como desde la sesión.
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario de DeviceTicket
+        // Validar los datos del formulario
         $validatedData = $request->validate([
             'code' => 'required|string|max:50',
-            'devices_id' => 'required|array', // Asegúrate de que sea un array
-            'devices_id.*' => 'exists:devices,id', // Asegura que cada ID exista en la tabla devices
+            'devices_id' => 'required|array',
+            'devices_id.*' => 'exists:devices,id', // Validar que cada dispositivo exista
             'current' => 'required|boolean',
         ]);
 
-        // Iniciar la transacción
-        DB::beginTransaction();
+        DB::beginTransaction(); // Iniciar la transacción
 
         try {
-            // Iterar sobre cada dispositivo seleccionado y crear un DeviceTicket para cada uno
-            foreach ($validatedData['devices_id'] as $deviceId) {
-                DeviceTicket::create([
-                    'code' => $validatedData['code'],
-                    'devices_id' => $deviceId,
-                    'current' => $validatedData['current'],
-                    'documents_id' => Document::where('code', $validatedData['code'])->first()->id,
-                ]);
+            $ticketData = session('ticket_data'); // Obtener datos del ticket temporal de la sesión
+
+            if (is_null($ticketData)) {
+                // Caso: creación desde un documento existente
+                $document = Document::where('code', $validatedData['code'])->firstOrFail();
+
+                foreach ($validatedData['devices_id'] as $deviceId) {
+                    DeviceTicket::create([
+                        'code' => $validatedData['code'],
+                        'devices_id' => $deviceId,
+                        'current' => $validatedData['current'],
+                        'documents_id' => $document->id, // Asociar con el documento
+                    ]);
+                }
+            } else {
+                // Caso: creación desde un ticket temporal en la sesión
+                $ticket = Ticket::create($ticketData); // Crear el ticket
+
+                foreach ($validatedData['devices_id'] as $deviceId) {
+                    DeviceTicket::create([
+                        'code' => $ticket->code, // Usar el código del ticket recién creado
+                        'devices_id' => $deviceId,
+                        'current' => $validatedData['current'],
+                        'ticket_id' => $ticket->id, // Asociar con el ticket
+                    ]);
+                }
+                session()->forget('ticket_data'); // Limpiar la sesión
             }
 
-            // Si todo está bien, hacer commit de la transacción
-            DB::commit();
+            DB::commit(); // Hacer commit si todo sale bien
 
-            // Redirigir a la lista de device tickets con un mensaje de éxito
             return redirect()->route('device_tickets.index')->with('success', 'Device ticket(s) created successfully.');
         } catch (\Exception $e) {
-            // Si ocurre un error, hacer rollback
-            DB::rollBack();
-
+            DB::rollBack(); // Hacer rollback en caso de error
             return redirect()->back()->withErrors(['error' => 'Error creating the device ticket. Please try again.']);
         }
     }
-
 
     /**
      * Muestra el formulario para editar un device ticket existente.
      */
     public function edit($id)
     {
-        // Buscar el DeviceTicket por su ID
-        $deviceTicket = DeviceTicket::findOrFail($id);
-        $devices = Device::all();
+        $deviceTicket = DeviceTicket::findOrFail($id); // Buscar el device ticket
+        $devices = Device::all(); // Obtener todos los dispositivos
+        $document = Document::where('code', $deviceTicket->code)->firstOrFail(); // Buscar documento asociado
 
-        // Buscar el documento relacionado con el código del DeviceTicket
-        $document = Document::where('code', $deviceTicket->code)->firstOrFail();
-
-        // Retornar la vista de edición con ambos modelos
-        return view('device_tickets.update', compact('deviceTicket', 'devices', 'document'));
+        return view('device_tickets.update', compact('deviceTicket', 'devices', 'document')); // Retornar la vista de edición
     }
-
-
 
     /**
      * Actualiza un device ticket existente en la base de datos.
+     * Valida y actualiza los datos del device ticket.
      */
     public function update(Request $request, $id)
     {
-        // Verifica los datos que llegan desde el formulario
-        
+        $deviceTicket = DeviceTicket::findOrFail($id); // Buscar el device ticket
 
-        // Buscar el device ticket por su ID
-        $deviceTicket = DeviceTicket::findOrFail($id);
-
-        // Validar los datos del formulario
         $validatedData = $request->validate([
             'code' => 'nullable|string|max:50',
             'devices_id' => 'nullable|exists:devices,id',
-            'current' => 'boolean'
+            'current' => 'boolean',
         ]);
+
         if (isset($validatedData['devices_id'])) {
-            $validatedData['devices_id'] = $validatedData['devices_id'][0]; // Tomar el primer valor del array
+            $validatedData['devices_id'] = $validatedData['devices_id'][0]; // Tomar el primer valor si es un array
         }
-        // Iniciar la transacción
-        DB::beginTransaction();
+
+        DB::beginTransaction(); // Iniciar la transacción
 
         try {
-            // Actualizar el device ticket con los datos validados
-            $deviceTicket->update($validatedData);
-
-            // Si todo está bien, hacer commit de la transacción
-            DB::commit();
+            $deviceTicket->update($validatedData); // Actualizar el device ticket
+            DB::commit(); // Hacer commit si todo sale bien
 
             return redirect()->route('device_tickets.index')->with('success', 'Device ticket actualizado correctamente.');
         } catch (\Exception $e) {
-            // Hacer rollback en caso de error
-            
+            DB::rollBack(); // Hacer rollback en caso de error
             return redirect()->back()->withErrors(['error' => 'Error actualizando el device ticket. Por favor, intente nuevamente.']);
         }
     }
-
-
 
     /**
      * Elimina un device ticket de la base de datos.
      */
     public function destroy($id)
     {
-        // Buscar el device ticket por su ID
-        $deviceTicket = DeviceTicket::findOrFail($id);
+        $deviceTicket = DeviceTicket::findOrFail($id); // Buscar el device ticket
+        $deviceTicket->delete(); // Eliminar el device ticket
 
-        // Eliminar el device ticket
-        $deviceTicket->delete();
-
-        // Redirigir a la lista de device tickets con un mensaje de éxito
         return redirect()->route('device_tickets.index')->with('success', 'Device ticket eliminado correctamente.');
     }
 }

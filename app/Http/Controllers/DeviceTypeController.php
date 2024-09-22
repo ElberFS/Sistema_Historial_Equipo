@@ -12,11 +12,8 @@ class DeviceTypeController extends Controller
      */
     public function index()
     {
-        // Obtener todos los registros de DeviceType
-        $deviceTypes = DeviceType::all();
-
-        // Retornar la vista 'index' con la lista de tipos de dispositivos
-        return view('device_types.index', compact('deviceTypes'));
+        $deviceTypes = DeviceType::all(); // Obtener todos los registros de DeviceType
+        return view('device_types.index', compact('deviceTypes')); // Retornar la vista con los tipos de dispositivos
     }
 
     /**
@@ -24,8 +21,7 @@ class DeviceTypeController extends Controller
      */
     public function create()
     {
-        // Retornar la vista para crear un nuevo DeviceType
-        return view('device_types.create');
+        return view('device_types.create'); // Retornar la vista de creación
     }
 
     /**
@@ -38,11 +34,10 @@ class DeviceTypeController extends Controller
             'name' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'current' => 'required|boolean' // 'required' asegura que sea enviado en el formulario
+            'current' => 'required|boolean', // Verificar que 'current' sea enviado como booleano
         ]);
 
-        // Crear un nuevo DeviceType con los datos validados
-        DeviceType::create($validatedData);
+        DeviceType::create($validatedData); // Crear un nuevo DeviceType
 
         // Redirigir a la lista de tipos de dispositivos con un mensaje de éxito
         return redirect()->route('device_types.index')->with('success', 'Tipo de equipo creado correctamente.');
@@ -53,11 +48,8 @@ class DeviceTypeController extends Controller
      */
     public function edit($id)
     {
-        // Buscar el DeviceType por su ID o lanzar una excepción si no se encuentra
-        $deviceType = DeviceType::findOrFail($id);
-
-        // Retornar la vista de edición con los datos del DeviceType
-        return view('device_types.update', compact('deviceType'));
+        $deviceType = DeviceType::findOrFail($id); // Buscar el DeviceType por su ID
+        return view('device_types.update', compact('deviceType')); // Retornar la vista de edición
     }
 
     /**
@@ -65,19 +57,17 @@ class DeviceTypeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Buscar el DeviceType por su ID
-        $deviceType = DeviceType::findOrFail($id);
+        $deviceType = DeviceType::findOrFail($id); // Buscar el DeviceType por su ID
 
         // Validar los datos del formulario
         $validatedData = $request->validate([
-            'name' => 'nullable|string|max:255', // 'nullable' permite que el campo no sea obligatorio
+            'name' => 'nullable|string|max:255', // Permitir que los campos sean opcionales
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
-            'current' => 'boolean' // Si no está presente, no cambiará el valor
+            'current' => 'boolean', // 'boolean' asegura que solo sea true/false
         ]);
 
-        // Actualizar el DeviceType con los datos validados
-        $deviceType->update($validatedData);
+        $deviceType->update($validatedData); // Actualizar el DeviceType
 
         // Redirigir a la lista de tipos de dispositivos con un mensaje de éxito
         return redirect()->route('device_types.index')->with('success', 'Tipo de equipo actualizado correctamente.');
@@ -88,11 +78,8 @@ class DeviceTypeController extends Controller
      */
     public function destroy($id)
     {
-        // Buscar el DeviceType por su ID
-        $deviceType = DeviceType::findOrFail($id);
-
-        // Eliminar el DeviceType
-        $deviceType->delete();
+        $deviceType = DeviceType::findOrFail($id); // Buscar el DeviceType por su ID
+        $deviceType->delete(); // Eliminar el DeviceType
 
         // Redirigir a la lista de tipos de dispositivos con un mensaje de éxito
         return redirect()->route('device_types.index')->with('success', 'Tipo de equipo eliminado correctamente.');

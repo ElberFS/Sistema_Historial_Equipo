@@ -25,10 +25,10 @@ class ManagerController extends Controller
      */
     public function create()
     {
-        // Obtener todos los usuarios para el campo select
-        $users = User::all(); // O User::pluck('name', 'id') si solo necesitas el nombre e id
+        // Obtener todos los usuarios para el campo select en el formulario
+        $users = User::all(); // O User::pluck('name', 'id') si solo se necesita el nombre y ID
 
-        // Retornar la vista y pasar la variable $users
+        // Retornar la vista 'create' con la lista de usuarios
         return view('managers.create', compact('users'));
     }
 
@@ -37,14 +37,14 @@ class ManagerController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario
+        // Validar los datos enviados desde el formulario
         $validatedData = $request->validate([
             'fullname' => 'required|string|max:70',
-            'dni' => ['required', 'regex:/^[0-9]{8}$/'],
-            'phone' => ['required', 'regex:/^9[0-9]{8}$/'],
+            'dni' => ['required', 'regex:/^[0-9]{8}$/'], // DNI debe ser un número de 8 dígitos
+            'phone' => ['required', 'regex:/^9[0-9]{8}$/'], // Teléfono debe iniciar con 9 y tener 9 dígitos
             'address' => 'required|string|max:100',
-            'users_id' => 'required|exists:users,id',
-            'current' => 'required|boolean'
+            'users_id' => 'required|exists:users,id', // Asegurarse de que el usuario exista
+            'current' => 'required|boolean' // Estado actual del manager (booleano)
         ]);
 
         // Crear un nuevo Manager con los datos validados
@@ -61,8 +61,9 @@ class ManagerController extends Controller
     {
         // Buscar el Manager por su ID o lanzar una excepción si no se encuentra
         $manager = Manager::findOrFail($id);
-        $users = User::all(); // O User::pluck('name', 'id') si solo necesitas los nombres
-        // Retornar la vista de edición con los datos del Manager
+        $users = User::all(); // Obtener todos los usuarios para el campo select
+
+        // Retornar la vista 'update' con los datos del Manager y los usuarios
         return view('managers.update', compact('manager', 'users'));
     }
 
@@ -74,14 +75,14 @@ class ManagerController extends Controller
         // Buscar el Manager por su ID
         $manager = Manager::findOrFail($id);
 
-        // Validar los datos del formulario
+        // Validar los datos enviados desde el formulario
         $validatedData = $request->validate([
             'fullname' => 'nullable|string|max:70',
-            'dni' => ['required', 'regex:/^[0-9]{8}$/'],
-            'phone' => ['required', 'regex:/^9[0-9]{8}$/'],
+            'dni' => ['required', 'regex:/^[0-9]{8}$/'], // El DNI debe seguir el mismo formato
+            'phone' => ['required', 'regex:/^9[0-9]{8}$/'], // Validar el formato del teléfono
             'address' => 'nullable|string|max:100',
-            'users_id' => 'exists:users,id',
-            'current' => 'boolean'
+            'users_id' => 'exists:users,id', // Verificar que el ID del usuario exista
+            'current' => 'boolean' // El campo current es booleano
         ]);
 
         // Actualizar el Manager con los datos validados
