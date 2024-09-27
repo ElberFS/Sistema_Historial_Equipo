@@ -33,4 +33,9 @@ class Ticket extends Model
     {
         return $this->belongsTo(Document::class, 'documents_id');
     }
+    public function devices()
+{
+    return $this->hasMany(Device::class, 'tickets_id', 'id');
+}
+
 }

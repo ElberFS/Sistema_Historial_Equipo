@@ -21,7 +21,8 @@
                     <x-nav-link href="{{ route('device_types.index') }}" :active="request()->routeIs('device_types.index')">
                         {{ __('Tipos Equipos') }}
                     </x-nav-link>
-                </div>
+                </div>   
+                <!-- Navegación para 'Areas' visible solo para usuarios con el permiso 'view-areas' -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link href="{{ route('areas.index') }}" :active="request()->routeIs('areas.index')">
                         {{ __('Areas') }}
@@ -42,16 +43,19 @@
                         {{ __('Documentos') }}
                     </x-nav-link>
                 </div>
+
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link href="{{ route('device_tickets.index') }}" :active="request()->routeIs('device_tickets.index')">
                         {{ __('Listas Equipos') }}
                     </x-nav-link>
                 </div>
+                
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link href="{{ route('tickets.index') }}" :active="request()->routeIs('tickets.index')">
                         {{ __('Tickets') }}
                     </x-nav-link>
                 </div>
+                
 
             </div>
 
@@ -169,6 +173,7 @@
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
+                
             </div>
         </div>
     </div>

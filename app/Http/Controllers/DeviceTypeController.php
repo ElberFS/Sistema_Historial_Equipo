@@ -13,7 +13,9 @@ class DeviceTypeController extends Controller
     public function index()
     {
         $deviceTypes = DeviceType::all(); // Obtener todos los registros de DeviceType
-        return view('device_types.index', compact('deviceTypes')); // Retornar la vista con los tipos de dispositivos
+        return view('device_types.index',
+        
+        compact('deviceTypes')); // Retornar la vista con los tipos de dispositivos
     }
 
     /**

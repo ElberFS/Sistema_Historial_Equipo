@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DeviceTicket;
 use App\Models\Ticket;
 use App\Models\Document;
 use App\Models\User;
@@ -22,6 +23,9 @@ class TicketController extends Controller
 
         return view('tickets.index', compact('tickets'));
     }
+    
+
+
 
     /**
      * Muestra el formulario para crear un nuevo ticket.
