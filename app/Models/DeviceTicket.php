@@ -38,5 +38,11 @@ class DeviceTicket extends Model
     {
         return $this->belongsTo(Device::class, 'devices_id');
     }
+    
+    // Relación con Repair
+    public function repairs()
+    {
+        return $this->hasMany(Repair::class, 'device_tickets_id');
+    }
 }
 
